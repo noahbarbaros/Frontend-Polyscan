@@ -53,8 +53,13 @@
   * {
     @apply border-border;
   }
-  body {
+  html, body {
     @apply bg-background text-foreground;
+    overflow: hidden;
+    overscroll-behavior: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
   }
 }
 
