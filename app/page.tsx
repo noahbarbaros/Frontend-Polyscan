@@ -9,11 +9,36 @@ import { useState } from "react"
 export default function Home() {
   const [email, setEmail] = useState("")
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmitted(true)
-    // Handle waitlist signup here
+    setLoading(true)
+    setError("")
+    
+    try {
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to join waitlist')
+      }
+
+      setSubmitted(true)
+      setEmail("")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -56,16 +81,21 @@ export default function Home() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-none h-12 text-sm font-mono tracking-wide focus:border-blue-500/50 focus:bg-white/10 transition-all"
+                    disabled={loading}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-none h-12 text-sm font-mono tracking-wide focus:border-blue-500/50 focus:bg-white/10 transition-all disabled:opacity-50"
                   />
                   <Button 
                     type="submit"
                     size="lg"
-                    className="bg-white text-black hover:bg-blue-500 hover:text-white rounded-none h-12 px-8 font-bold uppercase tracking-wide transition-all duration-300"
+                    disabled={loading}
+                    className="bg-white text-black hover:bg-blue-500 hover:text-white rounded-none h-12 px-8 font-bold uppercase tracking-wide transition-all duration-300 disabled:opacity-50"
                   >
-                    Join
+                    {loading ? "..." : "Join"}
                   </Button>
                 </div>
+                {error && (
+                  <p className="text-red-400 text-sm font-mono text-center">{error}</p>
+                )}
               </div>
             </form>
           ) : (
